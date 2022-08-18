@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\asus\\Desktop\\PypFolder\\PypTask\\PypTask\\PypTask.csproj": {}
+    "C:\\Users\\asus\\Source\\Repos\\ForBackendTask222\\PypTask\\PypTask\\PypTask.csproj": {}
   },
   "projects": {
-    "C:\\Users\\asus\\Desktop\\PypFolder\\PypTask\\PypTask\\PypTask.csproj": {
+    "C:\\Users\\asus\\Source\\Repos\\ForBackendTask222\\PypTask\\PypTask\\PypTask.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\asus\\Desktop\\PypFolder\\PypTask\\PypTask\\PypTask.csproj",
+        "projectUniqueName": "C:\\Users\\asus\\Source\\Repos\\ForBackendTask222\\PypTask\\PypTask\\PypTask.csproj",
         "projectName": "PypTask",
-        "projectPath": "C:\\Users\\asus\\Desktop\\PypFolder\\PypTask\\PypTask\\PypTask.csproj",
+        "projectPath": "C:\\Users\\asus\\Source\\Repos\\ForBackendTask222\\PypTask\\PypTask\\PypTask.csproj",
         "packagesPath": "C:\\Users\\asus\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\asus\\Desktop\\PypFolder\\PypTask\\PypTask\\obj\\",
+        "outputPath": "C:\\Users\\asus\\Source\\Repos\\ForBackendTask222\\PypTask\\PypTask\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -85,6 +85,10 @@
             "MimeKit": {
               "target": "Package",
               "version": "[3.3.0, )"
+            },
+            "NETCore.MailKit": {
+              "target": "Package",
+              "version": "[2.1.0, )"
             },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
