@@ -2,12 +2,14 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using NETCore.MailKit.Core;
 using OfficeOpenXml;
 using PypTask.Data;
 using PypTask.Dtos;
 using PypTask.Helper;
 
 using PypTask.Models;
+using PypTask.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -23,13 +25,15 @@ namespace PypTask.Controllers
         private readonly AppDbContext _context;
         private IWebHostEnvironment _env;
         private IConfiguration _config;
+        private readonly IEmailServices _service;
 
-        public ExcelController(AppDbContext context, IWebHostEnvironment env = null, IConfiguration config = null)
+        public ExcelController(AppDbContext context, IWebHostEnvironment env = null, IConfiguration config = null, IEmailServices service = null)
         {
 
             _context = context;
             _env = env;
             _config = config;
+            _service = service;
         }
 
         [HttpPost]
@@ -78,79 +82,79 @@ namespace PypTask.Controllers
         //çölündə ola bilməz, emaillərin düzgün formatda bitiyini və code.edu.az domainə aid olduğunu yoxlamaq.
         //StartDate-in EndDate-dən kiçik olduğunu yoxlamaq.
 
-        //[HttpGet]
-        //public IActionResult SendRepo([FromQuery] SendFilterDto filter)
-        //{
-        //    var dataList = new List<ReturnDto>();
-        //    var query = _context.ExcelUploads.Where(e => e.Date <= filter.EndDate && e.Date >= filter.StartDate);
-        //    switch (filter.SendType)
-        //    {
-        //        case SendType.Segment:
-        //            dataList = query.GroupBy(d => d.Segment).Select(data => new ReturnDto
-        //            {
-        //                Name = data.Key,
-        //                Count = data.Key.Count(),
-        //                TotalProfit = data.Sum(x => x.Profit),
-        //                TotalDiscount = data.Sum(x => x.DisCounts),
-        //                TotalSale = data.Sum(x => x.Sales),
-        //            }).ToList();
-        //            break;
-        //        case SendType.Country:
-        //            dataList = query.GroupBy(d => d.Country).Select(data => new ReturnDto
-        //            {
-        //                Name = data.Key,
-        //                Count = data.Key.Count(),
-        //                TotalProfit = data.Sum(x => x.Profit),
-        //                TotalDiscount = data.Sum(x => x.DisCounts),
-        //                TotalSale = data.Sum(x => x.Sales),
-        //            }).ToList();
-        //            break;
-        //        case SendType.Product:
-        //            dataList = query.GroupBy(d => d.Product).Select(data => new ReturnDto
-        //            {
-        //                Name = data.Key,
-        //                Count = data.Key.Count(),
-        //                TotalProfit = data.Sum(x => x.Profit),
-        //                TotalDiscount = data.Sum(x => x.DisCounts),
-        //                TotalSale = data.Sum(x => x.Sales),
-        //            }).ToList();
-        //            break;
-        //        case SendType.Discounts:
-        //            ReturnDto data = new ReturnDto();
-        //            foreach (var item in query.OrderBy(p => p.Product).ToList())
-        //            {
-        //                data.Name = "";
-        //                data.TotalDiscount = 1 - (item.SalePrice - item.DisCounts) / 100;
-        //                //data.totalDiscounts = 100 * (item.Discounts / item.salePrice);
-        //            }
-        //            break;
-        //        default:
-        //            break;
-        //    }
-        //    string fileName = Guid.NewGuid().ToString() + ".xlsx";
-        //    var pathFolder = Path.Combine(_env.WebRootPath, "Files/" + fileName);
-        //    ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-        //    using (var package = new ExcelPackage())
-        //    {
-        //        var workSheet = package.Workbook.Worksheets.Add("Sheet1").Cells[1, 1].LoadFromCollection(dataList, true);
-        //        package.SaveAs(pathFolder);
+        [HttpGet]
+        public IActionResult SendRepo([FromQuery] SendFilterDto filter)
+        {
+            var dataList = new List<ReturnDto>();
+            var query = _context.ExcelUploads.Where(e => e.Date <= filter.EndDate && e.Date >= filter.StartDate);
+            switch (filter.SendType)
+            {
+                case SendType.Segment:
+                    dataList = query.GroupBy(d => d.Segment).Select(data => new ReturnDto
+                    {
+                        Name = data.Key,
+                        Count = data.Key.Count(),
+                        TotalProfit = data.Sum(x => x.Profit),
+                        TotalDiscount = data.Sum(x => x.DisCounts),
+                        TotalSale = data.Sum(x => x.Sales),
+                    }).ToList();
+                    break;
+                case SendType.Country:
+                    dataList = query.GroupBy(d => d.Country).Select(data => new ReturnDto
+                    {
+                        Name = data.Key,
+                        Count = data.Key.Count(),
+                        TotalProfit = data.Sum(x => x.Profit),
+                        TotalDiscount = data.Sum(x => x.DisCounts),
+                        TotalSale = data.Sum(x => x.Sales),
+                    }).ToList();
+                    break;
+                case SendType.Product:
+                    dataList = query.GroupBy(d => d.Product).Select(data => new ReturnDto
+                    {
+                        Name = data.Key,
+                        Count = data.Key.Count(),
+                        TotalProfit = data.Sum(x => x.Profit),
+                        TotalDiscount = data.Sum(x => x.DisCounts),
+                        TotalSale = data.Sum(x => x.Sales),
+                    }).ToList();
+                    break;
+                case SendType.Discounts:
+                    ReturnDto data = new ReturnDto();
+                    foreach (var item in query.OrderBy(p => p.Product).ToList())
+                    {
+                        data.Name = "";
+                        data.TotalDiscount = 1 - (item.SalePrice - item.DisCounts) / 100;
+                        //data.totalDiscounts = 100 * (item.Discounts / item.salePrice);
+                    }
+                    break;
+                default:
+                    break;
+            }
+            string fileName = Guid.NewGuid().ToString() + ".xlsx";
+            var pathFolder = Path.Combine(_env.WebRootPath, "Files/" + fileName);
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+            using (var package = new ExcelPackage())
+            {
+                var workSheet = package.Workbook.Worksheets.Add("Sheet1").Cells[1, 1].LoadFromCollection(dataList, true);
+                package.SaveAs(pathFolder);
 
-        //        MemoryStream ms = new MemoryStream();
+                MemoryStream ms = new MemoryStream();
 
-        //        using (var file = new FileStream(pathFolder, FileMode.Open, FileAccess.Read))
-        //        {
-        //            var bytes = new byte[file.Length];
-        //            file.Read(bytes, 0, (int)file.Length);
-        //            ms.Write(bytes, 0, (int)file.Length);
-        //            file.Close();
-        //            _service.SendEmail(filter.AcceptorEmail, "Salam", "Your raport", fileName, bytes);
-        //        }
+                using (var file = new FileStream(pathFolder, FileMode.Open, FileAccess.Read))
+                {
+                    var bytes = new byte[file.Length];
+                    file.Read(bytes, 0, (int)file.Length);
+                    ms.Write(bytes, 0, (int)file.Length);
+                    file.Close();
+                    _service.SendEmail(filter.AcceptorEmail, "Salam", "Your raport", fileName, bytes);
+                }
 
-        //        return Ok("Sent");
-        //    }
+                return Ok("Sent");
+            }
 
-    //}
+        }
 
-        
+
     }
 }

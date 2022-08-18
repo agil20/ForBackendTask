@@ -9,7 +9,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using PypTask.Data;
-
+using PypTask.Models;
+using PypTask.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -50,7 +51,7 @@ namespace PypTask
                 });
             });
 
-            //services.AddScoped<IEmailServic, EmailService>();
+            services.AddScoped<IEmailServices, EmailService>();
 
         }
 
